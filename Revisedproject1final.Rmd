@@ -1,0 +1,292 @@
+---
+title: On September 3, 2019 the Mets lost all playoff hopes.
+author: Kieran Strawmier
+date: '2022-04-10'
+slug: did-the-mets-flush-their-playoff-chances-in-2019
+categories: []
+tags: []
+---
+The New York Mets had a legitimate chance to make the 2019 playoffs. They had 10 players with an OPS+ higher than 100, the NL CY Young Award winner in Jacob deGrom and all six starters had an ERA+ of slightly below or above 100. So why did they not make the playoffs? 
+```{r message=FALSE, warning=TRUE, echo=FALSE} 
+library(tidyverse)
+library(cowplot)
+library(lubridate)
+library(janitor)
+library(baseballr)
+```
+```{r message=FALSE, warning=TRUE, echo=FALSE}
+plays15 <- read_csv("playbyplays15.csv")%>% mutate(Date= Date %m-% years(6))
+plays16 <- read_csv("playbyplays16.csv")%>% mutate(Date= Date %m-% years(5))
+plays17 <- read_csv("playbyplays17.csv")%>% mutate(Date= Date %m-% years(4))
+plays18 <- read_csv("playbyplays18.csv")%>% mutate(Date= Date %m-% years(3))
+plays19 <- read_csv("playbyplays19.csv")%>% mutate(Date= Date %m-% years(2))
+plays20 <- read_csv("playbyplays20.csv") %>% mutate(Date= Date %m-% years(1))
+plays21 <- read_csv("playbyplays21.csv")
+```
+```{r message=FALSE, warning=TRUE, echo=FALSE}
+mets <- bref_team_results("NYM", 2019) %>% filter(Gm >= 130) %>% separate(Record, into=c("Wins", "Losses"), sep="-") %>% mutate(Wins = as.numeric(Wins))
+
+nats <- bref_team_results("WSN", 2019) %>% filter(Gm >= 130) %>% separate(Record, into=c("Wins", "Losses"), sep="-") %>% mutate(Wins = as.numeric(Wins))
+
+mil <- bref_team_results("MIL", 2019) %>% filter(Gm >= 130) %>% separate(Record, into=c("Wins", "Losses"), sep="-") %>% mutate(Wins = as.numeric(Wins))
+
+```
+
+```{r message=FALSE, warning=TRUE, echo=FALSE}
+ggplot() +
+  geom_step(data = mets, aes(x=Gm, y=Wins, group= Tm),color = "orange") +
+  geom_step(data = nats, aes(x= Gm, y=Wins, group= Tm),color="red") +
+  geom_step(data = mil, aes(x= Gm, y=Wins, group= Tm),color="blue") +
+    annotate("text", x=133, y=77, label="Nationals") +
+    annotate("text", x=150, y=76, label="Mets") +
+    annotate("text", x=141, y=75, label="Brewers") +
+    annotate("text", x=134, y=85, label="The Meltdown") +
+    annotate("text", x=150, y=89.6, label="The Last Wild Card Spot") +
+    geom_vline(xintercept=137)+
+    geom_hline(yintercept=89)+
+  theme_minimal()+
+  labs(
+    x="Game Number",
+    y="Wins", 
+    title = "The Mets could have been a playoff team in 2019",
+    subtitle = "But after the Nationals bottom of the 9th inning 6 run rally, the Mets never recovered.",
+    caption = "Source: baseball Reference | By: Kieran Strawmier"
+  ) +
+   theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title = element_text(size = 9), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank()
+    ) 
+```
+The meltdown game. 
+
+On a late night in early September, the Mets showed why when they gave up a six-run lead with one out in the bottom of the ninth inning to the eventual World Series Championship, The Washington Nationals. 
+
+After this nightmare of an inning, they gradually fell further and further from the last playoff spot. By the end of the season, the Mets were four games behind the Brewers, the last Wild Card team. 
+
+The Problem for the Mets was their bullpen.
+```{r message=FALSE, warning=TRUE, echo=FALSE}
+leaguepitch <- bref_daily_pitcher("2019-03-20", "2019-10-30") %>% filter(IP >=50)
+
+metspitchingstaff <- c("Luis Avilan","Tyler Bashlor","Brad Brach","Jacob deGrom","Edwin Diaz","Jeurys Familia","Chris Flexen","Wilmer Font","Drew Gagnon","Robert Gsellman","Donnie Hart","Walker Lockett","Seth Lugo","Steven Matz","Chris Mazza","Stephen Nogosek","Ryan O'Rourke","Corey Oswalt","Tim Peterson","Brooks Pounders","Jacob Rhame","Hector Santiago","Paul Sewald","Marcus Stroman","Noah Syndergaard","Jason Vargas","Zack Wheeler","Justin Wilson","Daniel Zamora")
+
+metspitch <- bref_daily_pitcher("2019-03-20", "2019-10-30") %>% filter(Name %in% metspitchingstaff)
+
+jv <- leaguepitch %>% filter(Name == "Justin Verlander")
+
+jh <- leaguepitch %>% filter(Name == "Josh Hader")
+
+```
+
+```{r message=FALSE, warning=TRUE, echo=FALSE}
+ggplot() +
+    geom_point(data=leaguepitch, aes(x=ERA, y=WHIP), color="grey") +
+    geom_point(data=metspitch, aes(x=ERA, y=WHIP), color="orange") +
+    geom_point(data=jh, aes(x=ERA, y=WHIP), color="Blue") +
+    geom_hline(yintercept = 1.296188) +
+    geom_vline(xintercept = 4.298944) +
+      annotate("text", x=1.8, y=.7, label="Good R allowed/Good H-W allowed", color="Purple", size=3.5) +
+      annotate("text", x=1.8, y=2.35, label="Good R allowed/Bad H-W allowed", color="Purple", size=3.5) +
+      annotate("text", x=8, y=2.35, label="Bad R allowed/Bad H-W allowed", color="Purple", size=3.5) +
+      annotate("text", x=8, y=.7, label="Bad R allowed/Good H-W allowed", color="Purple", size=3.5) +
+      annotate("text", x=9,y=1.33,label="League Average") +
+        annotate("text", x=5.55,y= 1.068,label="Paul Sewald") +
+        annotate("text", x=6.5,y=1.4,label="Edwin Díaz") +
+        annotate("text", x=3.5,y=.971,label="Jacob deGrom") +
+        annotate("text", x=1.7,y=.806,label="Josh Hader") +
+        annotate("text", x=5.3,y=1.25,label="Luis Avilan") +
+   theme_minimal()+
+  labs(
+    x="Earned Run Average",
+    y="Walk and Hits per Innings Pitched ", 
+    title = "How good were the bottom of the 9th Pitchers",
+    subtitle = "The Mets 9th inning pitchers gave up a lot of runs, walks and hits.",
+    caption = "Source: baseball Reference | By: Kieran Strawmier"
+  ) +
+ theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title = element_text(size = 9), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank()
+    ) 
+```
+
+```{r message=FALSE, warning=TRUE, echo=FALSE}
+mt <- bref_daily_batter("2019-03-20", "2019-10-30") %>% filter(Name == "Mike Trout")
+
+natb9batters <- c("Victor Robles", "Howie Kendrick", "Trea Turner", "Asdrubal Cabrera","Anthony Rendon", "Juan Soto","Ryan Zimmerman", "Kurt Suzuki")
+
+nats <- bref_daily_batter("2019-03-20", "2019-10-30") %>% filter(Name %in% natb9batters)
+
+leaguebat <- bref_daily_batter("2019-03-20", "2019-10-30") %>% filter(AB>= 150)
+```
+The best reliever in the National League was Josh Hader. The three pitchers in the 9th inning were in a different area code. While they were all had around average ERAs or WHIPs, they still were relatively below average. logic says you put your best guy in the game when you need the win. 
+
+But with a six-run lead in the bottom of the ninth, you can usually get away with a non-traditional closer to save your best arms, except when you are in the playoff race and need every win to survive. 
+
+Easier said than done when considering the poor bullpen preformance throughout the year.
+
+This game was a historic choke by the Mets. But the Nationals players that batted in this inning were some of the best in the league in 2019.
+```{r message=FALSE, warning=TRUE, echo=FALSE}
+ggplot() +
+  geom_point(data=leaguebat, aes(x=OBP, y=SLG), color="grey") +
+  geom_point(data=nats, aes(x=OBP, y=SLG),color="red") +
+  geom_point(data=mt, aes(x=OBP, y=SLG), color="blue") +
+  geom_vline(xintercept = 0.3258696) +
+  geom_hline(yintercept = 0.441601) +
+  annotate("text", x=0.24, y=.452, label="League Average") +
+    annotate("text", x=.369, y=.68, label="Good on base/Good power", color="Purple", size=3.5) +
+    annotate("text", x=.369, y=.2, label="Good on base/Bad power", color="Purple", size=3.5) +
+    annotate("text", x=.25, y=.2, label="Bad on base/Bad power", color="Purple", size=3.5) +
+    annotate("text", x=.25, y=.68, label="Bad on base/Good power", color="Purple", size=3.5) +
+      annotate("text", x=.42, y=.65, label="Mike Trout") +
+      annotate("text", x=.302, y=.414, label="Victor Robles") +
+      annotate("text", x=.37, y=.57, label="Howie Kendrick") +
+      annotate("text", x=.35, y=.515, label="Trea Turner") +
+      annotate("text", x=.367, y=.451, label="Asdrubal Cabrera") +
+      annotate("text", x=.389, y=.6, label="Anthony Rendon") +
+      annotate("text", x=.418, y=.55, label="Juan Soto") +
+      annotate("text", x=.351, y=.415, label="Ryan Zimmerman") +
+      annotate("text", x=.307, y=.489, label="Kurt Suzuki") +
+    theme_minimal()+
+  labs(
+    x="On Base %",
+    y="Slugging %", 
+    title = "How good were the bottom of the 9th hitters",
+    subtitle = "The Nationals 9th inning batting order were some of the best at hitting for power and getting on.",
+    caption = "Source: baseball Reference | By: Kieran Strawmier") +
+ theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title = element_text(size = 9), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank()
+    ) 
+```
+So, the eight players that walked up to the plate this inning were pretty scary. Three of them were near the best all-time baseball player, Mike Trout. Having slugging percentages in the upper .500s and on base percentages in the .400s.
+
+So at any given moment the Nationals had the abilty to put up a handful of runs. 
+
+The Met's win expectancy was at or above 50% for 70% of the game. So how did they go from 100% win expectancy to 0% in just eight plays?
+
+```{r message=FALSE, warning=TRUE, echo=FALSE}
+allplays <- bind_rows(plays15,plays16,plays17,plays18,plays19,plays20,plays21)
+```
+
+```{r message=FALSE, warning=TRUE, echo=FALSE}
+wwe <- allplays %>% 
+  group_by(
+    Date, Away, AwayScore, Home, HomeScore, Inn
+    ) %>% 
+  summarize(
+    peak = max(wWE), valley = min(wWE)
+    ) %>% 
+  mutate(
+    difference = peak - valley)%>% arrange(desc(difference)
+    )
+```
+
+```{r message=FALSE, warning=TRUE, echo=FALSE}
+blowingleads <- wwe %>% filter(peak >= 95, valley <= 5, month(Date) == 8 & day(Date) > 25 | month(Date) == 9)
+```
+
+```{r message=FALSE, warning=TRUE, echo=FALSE}
+meltdown <- blowingleads %>% filter(Away== "NYM", Date== "2019-09-03")
+```
+
+```{r message=FALSE, warning=TRUE, echo=FALSE}
+mets <- meltdown %>% mutate(inversepeak = 100-peak)
+```
+
+```{r message=FALSE, warning=TRUE, echo=FALSE}
+badgame <- allplays %>% filter(Away== "NYM", Date == "2019-09-03") 
+
+nats <- badgame %>% select(game_sequence, Home, wWE) %>% rename(Team = Home)
+
+mets <- badgame %>% select(game_sequence, Away, wWE) %>% rename(Team = Away) %>% mutate(wWE = 100-wWE)
+
+stacked <- bind_rows(nats, mets)
+```
+
+```{r message=FALSE, warning=TRUE, echo=FALSE}
+bar1 <- ggplot() + 
+  geom_bar(data=stacked, aes(x=game_sequence, weight=wWE, fill=Team)) +
+  scale_fill_manual(values=c("Orange", "red")) +
+  geom_hline(yintercept=50) +   
+  theme_minimal()+
+  labs(
+    x="Play Number",
+    y="Win Expectancy", 
+    title = "The Mets had the Nationals up against a wall",
+    subtitle = "in the bottom of the ninth they had a 10-4 lead over the Nationals.",
+    caption = "Source: baseball Reference | By: Kieran Strawmier"
+  ) +
+   theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title = element_text(size = 9), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank()
+    ) 
+```
+
+```{r message=FALSE, warning=TRUE, echo=FALSE}
+natsb9 <- badgame %>% filter(game_sequence >= 79) %>% select(game_sequence, Home, wWE) %>% rename(Team = Home)
+metsb9 <- badgame %>% filter(game_sequence >= 79) %>% select(game_sequence, Away, wWE) %>% rename(Team = Away) %>% mutate(wWE = 100-wWE)
+stackedb9 <- bind_rows(natsb9, metsb9)
+```
+
+```{r message=FALSE, warning=TRUE, echo=FALSE}
+bar2 <- ggplot() + 
+  geom_bar(data=stackedb9, aes(x=game_sequence, weight=wWE, fill=Team)) +
+  scale_fill_manual(values=c("Orange", "red")) +
+  geom_hline(yintercept=50) +
+    annotate("text", x=79, y=15, label="Robles 1B", size= 2)+
+      annotate("text", x=79, y=6, label="4-10", size= 2)+
+    annotate("text", x=81, y=15, label="Turner 2B", size= 2)+
+      annotate("text", x=81, y=6, label="5-10", size= 2)+
+    annotate("text", x=82, y=18, label="A. Cabrera 1B", size= 2)+
+      annotate("text", x=82, y=9, label="5-10", size= 2)+
+    annotate("text", x=83, y= 28, label="Rendon 1B", size= 2) +
+      annotate("text", x=83, y=19, label="6-10", size= 2)+
+    annotate("text", x=84, y=32, label="Soto 1B", size= 2)+
+      annotate("text", x=84, y=24, label="6-10", size= 2)+
+    annotate("text", x=85, y=44, label="R. Zimmerman 2B", size= 1.8) +
+      annotate("text", x=85, y=35, label="8-10", size= 2)+
+    annotate("text", x=86, y=95, label="K. Suzuki HR", size= 2.4) +
+      annotate("text", x=86, y=85, label="11-10", size= 2.7)+
+  theme_minimal()+
+  labs(
+    x="Play Number",
+    y="Win Expectancy", 
+    title = "The Nationals regained the lead in 8 plays",
+    subtitle = "They started the inning with a win expectancy rating of 1%",
+    caption = "Source: baseball Reference | By: Kieran Strawmier"
+  ) +
+   theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title = element_text(size = 9), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank()
+    ) 
+```
+
+```{r message=FALSE, warning=TRUE, echo=FALSE}
+plot_grid(bar1,bar2, ncol=1)
+```
+First, let's look at the Met's top of the ninth inning for more context to this catastrophic collapse.
+
+The Mets started the inning with a 5-4 lead. Brandon Nimmo took the first pitch and sent it over the wall. The Mets scored four more runs and presumably took to soul out of the Nationals going into the bottom of the ninth.
+
+Ok, now back to the inning in question.
+
+Paul Sewald came in to pitch the ninth, a slightly below-average pitcher regarding ERA and a respectable 1.068 WHIP, (Note he pitched only 19 full innings that year). 
+
+Luis Avilan replaced Sewald after Rendon singled. Avilan was an average as a pitcher in 2019 with a slightly below average ERA.
+
+After four pitches and Soto's single, Edwin Diaz replaced Avilan. Diaz had elite numbers when it came to everything except, HardHit%, Barrel% and average exit velocity.So when contact was made, which was rare with a whiff% in the 98% percentile, it was hit hard and far.
+
+The Nationals hero, Kurt Suzuki, had a 3-2 count in an eight-pitch at-bat when he took a 100 mph fastball to deep left field for a walk-off home run into a sparsely populated crowd of Nationals faithful, sending Edwin and the Mets home with their hope shattered.
+
+Find the highlights for this game [here](https://www.youtube.com/watch?v=2mbKd5roHBM).
+
+Find the code for article [here](https://github.com/KieranStrawmier/Notebooks/blob/main/Project1.Rmd).
