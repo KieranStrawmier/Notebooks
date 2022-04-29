@@ -1,0 +1,118 @@
+---
+title: College Baseball Has a Bright Future.
+author: Kieran Strawmier
+date: '2022-04-29'
+slug: college-baseball-has-a-bright-future
+categories: []
+tags: []
+---
+The college baseball season is well underway for the 2022. Although it is only two month into the season, there is a lot of freshmen making an impact on their teams. Two of the more prominent freshman are Carson DeMartini of Virginia Tech and Tommy White of North Carolina State, These two are sporting a godly OPS of 1.156 and 1.080 respectively. Both are productive freshman on competitive teams that has seem their fair share of top 25 teams this season. So the question to answer is, who's the best of the best?
+```{r message=FALSE, warning=FALSE, echo=FALSE} 
+library(tidyverse)
+library(waffle)
+library(ggrepel)
+library(scales)
+library(cowplot)
+```
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+hitters<-read_csv("baseballhittingstats2022.csv") %>% group_by(Team, FullName) %>% mutate_at(c(11:35), ~replace(., is.na(.), 0))
+pitchers<-read_csv("baseballpitchingstats2022.csv") %>% group_by(Team, FullName) %>% mutate_at(c(11:45), ~replace(., is.na(.), 0))
+```
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+hittersadj <- hitters %>% 
+  mutate(OPS = OBPct + SlgPct, XBH=`2B`+`3B`+HR, `1B`= H-XBH)%>% 
+  filter(AB>=100, GP>=30)%>% 
+  select(Team,FullName,Yr, Pos, GS, GP, AB, BA, OPS, H, BB, `1B`, XBH, TB, HR, K, SB, IBB,)%>% arrange(desc(OPS))
+frhitters <- hittersadj %>% filter(Yr == "Fr", AB>=100, GP>=30)
+frpitchers <- pitchers %>% filter(Yr == "Fr", IP>=10, GP>=10, ERA <= 3.50) 
+```
+```{r  message=FALSE, warning=FALSE, echo=FALSE}
+hits <- c("Carson"=38, "Tommy"=53)
+XBH <- c("Carson"=20, "Tommy"=23, 48)
+
+
+waffle1 <- waffle(
+        XBH,
+        rows =10, 
+        title="Extra Base Hits", 
+        xlab="1 square = 1 extra-base hit", 
+        colors = c("black", "blue","white")
+) + theme(legend.position = "none")
+waffle2 <- waffle(
+        hits,
+        rows =10, 
+        title="Total Hits", 
+        xlab="1 square = 1 hit", 
+        colors = c("black", "blue")) + theme(legend.position = "none")
+plot_grid(waffle1,waffle2,nrow = 1) +
+  labs(
+    x="", 
+    y="", 
+    title="White out hits everyone, and has unmatched power.", 
+    subtitle="Although DeMartini has amazing numbers, White is simply out hitting him with a larger sample size.
+White is represented in blue with 153 at-bats and Demartini in black with 116.",
+    caption="Source: NCAA | By Kieran Strawmier"
+    )+
+  theme_minimal() + 
+  theme(
+    plot.title = element_text(size = 16, face = "bold")
+    ) 
+```
+White is the leading qualified freshman, 30 games played and 100 at-bats, in hits, and is tied for the lead in extra-base hits with 23. While White leads in many of these categories he has a lot of competition right behind him. However two stats make white stand out. White rises above the rest of his peers, one of them being total bases.
+```{r  message=FALSE, warning=FALSE, echo=FALSE}
+tw <- hittersadj %>% filter(FullName=="Tommy White")
+cd <- hittersadj %>% filter(FullName=="Carson DeMartini")
+
+ggplot() +
+  geom_point(data = hittersadj, aes(x=OPS, y=TB, size=AB),color="grey") +
+  geom_point(data = frhitters, aes(x=OPS, y=TB, size=AB),color="red") +
+  geom_point(data = tw, aes(x=OPS, y=TB, size=AB),color="blue") +
+  geom_point(data = cd, aes(x=OPS, y=TB, size=AB),color="blue") +
+  geom_smooth(data =hittersadj, aes(x=OPS, y=TB), method = "lm", se=FALSE)+
+  geom_text(aes(x=.99, y=112, label="Tommy White"), color="black") +
+  geom_text(aes(x=1.3, y=75, label="Carson Demartini"), color="black") +
+  scale_size_continuous(name="At-Bats") + 
+      labs(
+    x="On Base + Slugging", 
+    y="Total Bases", 
+    title="White is leading pack for freshman and is 
+competitive with his upperclassmen peers.", 
+    subtitle="White is out preforming his expected total bases, with the most out of all qualified freshman.", 
+    caption="Source: NCAA | By Kieran Strawmier"
+    )+
+  theme_minimal() + 
+  theme(
+    plot.title = element_text(size = 17, face = "bold")
+    ) 
+```
+While White is outperformign his expected total bases, he also leads all qualified freshmen in total bases so far this season. This lead is 11 bases. This means that second place would have to hit three home runs to pass White by one base. This is unlikely considering that White is leading the qualified freshman in home runs as well.
+
+I feel like a broken record.
+
+White is a different level of good, this can be seen most in his intentional walks so far.
+```{r  message=FALSE, warning=FALSE, echo=FALSE}
+top10 <- hittersadj %>% ungroup %>% arrange(desc(IBB)) %>% top_n(10, wt=IBB)
+ggplot()+
+  geom_bar(data=top10, aes(x=reorder(FullName,IBB), weight= IBB)) +
+    geom_bar(data=tw, aes(x=reorder(FullName,IBB), weight= IBB),fill="red") +
+
+  coord_flip()+
+    labs(
+    x="", 
+    y="Intentional Walks", 
+    title="Intentionally walking a hitter is a sign of fear.", 
+    subtitle="White is the only freshman on this list with five and it is for good reason.", 
+    caption="Source: NCAA | By Kieran Strawmier"
+    )+
+  theme_minimal() + 
+  theme(
+    plot.title = element_text(size = 17, face = "bold")
+    ) 
+```
+Among all players, White is 9th in intentional walks. You would have to look down to number 70 on the list to find another freshman.
+
+Overall, White is the best freshman in college baseball so far this season. With no signs of slowing down and pitchers still struggling to find his weaknesses, which there really aren't any, he should have no problem with continuing his dominance.
+
+
